@@ -1,0 +1,34 @@
+COMP3911 - Operating Systems - Assignment 2
+tokenRing 10/26/2015
+Jane Henderson
+
+-----------------------------------------------------------------------
+
+This C program uses multiple Unix processes communicating via a shared memory region to simulate a Token Ring network.
+A Token Ring consists of a network of nodes in a ring topology where a token (small data packet) is passed around the ring to govern which node is given control of the ring. 
+
+-----------------------------------------------------------------------
+
+Design Rationale
+
+For simplicity of the simulation, this program can only send one byte of data at a time, an unsigned char. Each node (position n) can send bytes to the data transfer buffer (at position n) and receive from the data transfer buffer (at position (n-1)). 
+
+Semaphores are used in the simulation to control the transmitting of data to ensure that data will be corrupted while moving along the token ring. They are initially set to values based on how they will be signalled and waiting upon in the implementation.
+
+Separate functions were built to send and receive bytes. These used semaphores to wait until a data_xfer is empty or filled and to signal when a data_xfer is empty or filled.
+
+The implementation uses switch statements to simulate a state machine. This way the status of each byte transfer can be kept track of. There are disctinct cases, which are used to indicate the state of where in the data packet is being sent. These are: TOKEN_FLAG, TO, FROM, LEN and DATA (with DONE included in the function send_pkt).
+
+The function token_node(control, num) is used to process data around nodes which are not the sender. If the node is a sender, token_node will call send_pkt(control, num) as a special case to handle sending a packet. 
+token_node (called upon in runSimulation) handles receiving ALL bytes, including those called in send_pkt from the sender and those sent in token_node (itself). 
+
+These choices were made as it made the most sense to have a separate function to handle the special case of the sender. This is due to the sender always changing, so it can be called upon by different nodes.
+
+----------------------------------------------------------------------
+
+The program defaults to 7 nodes in the Token Ring. The program will take in one argument, the number of data packets to be transferred.
+
+----------------------------------------------------------------------
+
+To COMPILE the program: make
+To RUN the program: tokensim [NUMBER_OF_PACKETS]
